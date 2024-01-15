@@ -28,3 +28,10 @@
 * Waiting for the spawned thread to complete
 
   Calling join on the handle blocks the thread currently running until the thread represented by the handle terminates. Blocking a thread means that thread is prevented from performing work or exiting. Because we’ve put the call to join after the main thread’s for loop
+
+* We can clone transmitter and send messages to single reciever. For example:
+
+```rs
+let (tx, rx) = mspc::channel();
+let tx1 = tx.clone(); // this will transmit message to same reciever rx
+```
