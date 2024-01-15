@@ -1,4 +1,4 @@
-use std::sync::mpsc;
+use std::sync::mpsc::{self, channel};
 use std::{thread, time::Duration};
 
 fn hello_concurrency() {
@@ -29,7 +29,44 @@ fn message_passing_with_concurrency() {
     println!("Got: {}", received);
 }
 
+fn multiple_producers_by_cloning() {
+    let (tx, rx) = mpsc::channel();
+    let tx1 = tx.clone();
+    thread::spawn(move || {
+        let vals = vec![
+            String::from("hi"),
+            String::from("from"),
+            String::from("the"),
+            String::from("thread"),
+        ];
+
+        for val in vals {
+            tx1.send(val).unwrap();
+            thread::sleep(Duration::from_secs(10));
+        }
+    });
+
+    thread::spawn(move || {
+        let vals = vec![
+            String::from("more"),
+            String::from("messages"),
+            String::from("for"),
+            String::from("you"),
+        ];
+
+        for val in vals {
+            tx.send(val).unwrap();
+            thread::sleep(Duration::from_secs(10));
+        }
+    });
+
+    for recieved in rx {
+        println!("Got {}", recieved);
+    }
+}
+
 fn main() {
     hello_concurrency();
     message_passing_with_concurrency();
+    multiple_producers_by_cloning();
 }
