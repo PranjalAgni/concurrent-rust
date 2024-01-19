@@ -65,8 +65,18 @@ fn multiple_producers_by_cloning() {
     }
 }
 
+fn second_thread_example() {
+    let valorant_handle = thread::spawn(|| {
+        let character_name = String::from("Jett");
+        println!("{}", character_name);
+    });
+
+    valorant_handle.join().unwrap()
+}
+
 fn main() {
     hello_concurrency();
     message_passing_with_concurrency();
     multiple_producers_by_cloning();
+    second_thread_example();
 }
