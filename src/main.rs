@@ -1,4 +1,5 @@
 use std::sync::mpsc::{self, channel};
+use std::sync::{Arc, Mutex};
 use std::{thread, time::Duration};
 
 fn hello_concurrency() {
@@ -42,7 +43,7 @@ fn multiple_producers_by_cloning() {
 
         for val in vals {
             tx1.send(val).unwrap();
-            thread::sleep(Duration::from_secs(10));
+            thread::sleep(Duration::from_secs(1));
         }
     });
 
@@ -56,7 +57,7 @@ fn multiple_producers_by_cloning() {
 
         for val in vals {
             tx.send(val).unwrap();
-            thread::sleep(Duration::from_secs(10));
+            thread::sleep(Duration::from_secs(1));
         }
     });
 
@@ -74,9 +75,44 @@ fn second_thread_example() {
     valorant_handle.join().unwrap()
 }
 
+fn api_of_mutexes() {
+    let m = Mutex::new(5);
+    {
+        let mut m = m.lock().unwrap();
+        *m = 7;
+    }
+
+    println!("mutex holds {:?}", m);
+}
+
+fn sharing_mutexes_between_threads() {
+    let counter = Arc::new(Mutex::new(0));
+    let mut handles = vec![];
+    for _ in 0..10 {
+        let counter = Arc::clone(&counter);
+        let handle = thread::spawn(move || {
+            let mut num = counter.lock().unwrap();
+            *num += 1;
+        });
+
+        handles.push(handle);
+    }
+
+    for handle in handles {
+        handle.join().unwrap();
+    }
+
+    println!(
+        "Result(sharing_mutexes_between_threads()): {}",
+        *counter.lock().unwrap()
+    );
+}
+
 fn main() {
     hello_concurrency();
     message_passing_with_concurrency();
     multiple_producers_by_cloning();
     second_thread_example();
+    api_of_mutexes();
+    sharing_mutexes_between_threads();
 }
